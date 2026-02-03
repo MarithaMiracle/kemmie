@@ -11,39 +11,6 @@ import { OAuth2Client } from 'google-auth-library';
 export class AuthService {
   constructor(private prisma: PrismaService, private jwt: JwtService) {}
 
-  async login(email: string, password: string): Promise<LoginResponseDto> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user) throw new UnauthorizedException();
-    const ok = await bcrypt.compare(password, user.passwordHash);
-    if (!ok) throw new UnauthorizedException();
-    const membership = await this.prisma.relationshipMember.findFirst({ where: { userId: user.id } });
-    const token = await this.jwt.signAsync({ sub: user.id, relationshipId: membership?.relationshipId || null });
-    return { accessToken: token };
-  }
-
-  async register(email: string, password: string, name: string, birthday?: string, inviteCode?: string): Promise<LoginResponseDto> {
-    const exists = await this.prisma.user.findUnique({ where: { email } });
-    if (exists) throw new BadRequestException('email_taken');
-    const passwordHash = await bcrypt.hash(password, 10);
-    const user = await this.prisma.user.create({ data: { email, passwordHash, name, birthday: birthday ? new Date(birthday) : null } });
-    let relationshipId: string | null = null;
-    if (inviteCode) {
-      const rel = await this.prisma.relationship.findUnique({ where: { joinCode: inviteCode } });
-      if (!rel) throw new BadRequestException('invalid_invite');
-      const count = await this.prisma.relationshipMember.count({ where: { relationshipId: rel.id } });
-      if (count >= 2) throw new BadRequestException('relationship_full');
-      await this.prisma.relationshipMember.create({ data: { relationshipId: rel.id, userId: user.id } });
-      relationshipId = rel.id;
-    } else {
-      const joinCode = randomBytes(5).toString('hex');
-      const rel = await this.prisma.relationship.create({ data: { joinCode } });
-      await this.prisma.relationshipMember.create({ data: { relationshipId: rel.id, userId: user.id } });
-      relationshipId = rel.id;
-    }
-    const token = await this.jwt.signAsync({ sub: user.id, relationshipId });
-    return { accessToken: token };
-  }
-
   async oauthGoogle(email?: string, name?: string): Promise<LoginResponseDto> {
     if (!email) throw new BadRequestException('missing_email');
     let user = await this.prisma.user.findUnique({ where: { email } });
