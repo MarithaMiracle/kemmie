@@ -1,0 +1,31 @@
+{
+    "expo": {
+        "name": "kemmie-mobile",
+        "slug": "kemmie-mobile",
+        "version": "0.1.0",
+        "orientation": "portrait",
+        "userInterfaceStyle": "automatic",
+        "sdkVersion": "51.0.0",
+        "platforms": [
+            "ios",
+            "android"
+        ],
+        "assetBundlePatterns": [
+            "**/*"
+        ],
+        "splash": {
+            "backgroundColor": "#FFFFFF"
+        },
+        "scheme": "kemmie",
+        "plugins": ["expo-dev-client", ["expo-splash-screen", { "backgroundColor": "#FFFFFF" }]],
+        "android": {
+            "package": "com.maritha.kemmie"
+        },
+        "extra": {
+            "eas": {
+                "projectId": "687377d0-edaa-4995-8dbe-61e19e1bd9d2"
+            }
+        },
+        "owner": "maritha"
+    }
+}

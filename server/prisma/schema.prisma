@@ -1,0 +1,220 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Mood {
+  GOOD
+  OKAY
+  LOW
+  STRESSED
+}
+
+enum MessageType {
+  TEXT
+  EMOJI
+  STICKER
+}
+
+enum VibeCategory {
+  FOOD
+  ACTIVITY
+  MUSIC
+  SHOPPING
+  PLAN
+}
+
+model User {
+  id                       String                     @id @default(uuid())
+  email                    String                     @unique
+  passwordHash             String
+  name                     String
+  birthday                 DateTime?
+  createdAt                DateTime                   @default(now())
+  memberships              RelationshipMember[]
+  letters                  Letter[]                   @relation("LetterAuthor")
+  checkIns                 CheckIn[]
+  comfortMessages          ComfortMessage[]
+  messages                 Message[]
+  reactions                MessageReaction[]
+  CheckInResponse          CheckInResponse[]
+  ScheduledBirthdayMessage ScheduledBirthdayMessage[]
+  vibes                    Vibe[]
+  memories                 Memory[]
+}
+
+model Relationship {
+  id               String                     @id @default(uuid())
+  createdAt        DateTime                   @default(now())
+  joinCode         String                     @unique
+  members          RelationshipMember[]
+  letters          Letter[]
+  checkIns         CheckIn[]
+  comfortMessages  ComfortMessage[]
+  messages         Message[]
+  comfortStates    ComfortState[]
+  birthdayMessages ScheduledBirthdayMessage[]
+  CheckInResponse  CheckInResponse[]
+  vibes            Vibe[]
+  memories         Memory[]
+}
+
+model RelationshipMember {
+  id             String       @id @default(uuid())
+  relationshipId String
+  userId         String
+  createdAt      DateTime     @default(now())
+  relationship   Relationship @relation(fields: [relationshipId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
+
+  @@unique([relationshipId, userId])
+}
+
+model Letter {
+  id             String       @id @default(uuid())
+  relationshipId String
+  authorId       String
+  content        String
+  unlockDate     DateTime
+  readAt         DateTime?
+  createdAt      DateTime     @default(now())
+  relationship   Relationship @relation(fields: [relationshipId], references: [id])
+  author         User         @relation("LetterAuthor", fields: [authorId], references: [id])
+
+  @@index([relationshipId, unlockDate])
+}
+
+model CheckIn {
+  id             String       @id @default(uuid())
+  relationshipId String
+  userId         String
+  date           DateTime
+  mood           Mood
+  createdAt      DateTime     @default(now())
+  relationship   Relationship @relation(fields: [relationshipId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
+
+  @@unique([relationshipId, userId, date])
+}
+
+model CheckInResponse {
+  id             String       @id @default(uuid())
+  relationshipId String
+  authorId       String
+  mood           Mood
+  content        String
+  createdAt      DateTime     @default(now())
+  relationship   Relationship @relation(fields: [relationshipId], references: [id])
+  author         User         @relation(fields: [authorId], references: [id])
+
+  @@index([relationshipId, mood])
+}
+
+model ComfortMessage {
+  id               String             @id @default(uuid())
+  relationshipId   String
+  authorId         String
+  content          String
+  createdAt        DateTime           @default(now())
+  relationship     Relationship       @relation(fields: [relationshipId], references: [id])
+  author           User               @relation(fields: [authorId], references: [id])
+  ComfortStateUsed ComfortStateUsed[]
+}
+
+model ComfortState {
+  id             String             @id @default(uuid())
+  relationshipId String
+  cycleId        Int                @default(1)
+  createdAt      DateTime           @default(now())
+  relationship   Relationship       @relation(fields: [relationshipId], references: [id])
+  used           ComfortStateUsed[]
+
+  @@unique([relationshipId, cycleId])
+}
+
+model ComfortStateUsed {
+  id             String         @id @default(uuid())
+  comfortStateId String
+  messageId      String
+  usedAt         DateTime       @default(now())
+  comfortState   ComfortState   @relation(fields: [comfortStateId], references: [id])
+  message        ComfortMessage @relation(fields: [messageId], references: [id])
+
+  @@unique([comfortStateId, messageId])
+}
+
+model Message {
+  id             String            @id @default(uuid())
+  relationshipId String
+  senderId       String
+  content        String
+  type           MessageType
+  createdAt      DateTime          @default(now())
+  relationship   Relationship      @relation(fields: [relationshipId], references: [id])
+  sender         User              @relation(fields: [senderId], references: [id])
+  reactions      MessageReaction[]
+
+  @@index([relationshipId, createdAt])
+}
+
+model MessageReaction {
+  id        String   @id @default(uuid())
+  messageId String
+  userId    String
+  value     String
+  createdAt DateTime @default(now())
+  message   Message  @relation(fields: [messageId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([messageId, userId, value])
+}
+
+model ScheduledBirthdayMessage {
+  id             String       @id @default(uuid())
+  relationshipId String
+  authorId       String
+  daysBefore     Int
+  content        String
+  createdAt      DateTime     @default(now())
+  relationship   Relationship @relation(fields: [relationshipId], references: [id])
+  author         User         @relation(fields: [authorId], references: [id])
+
+  @@index([relationshipId, daysBefore])
+}
+
+model Vibe {
+  id             String       @id @default(uuid())
+  relationshipId String
+  authorId       String
+  category       VibeCategory
+  data           Json
+  createdAt      DateTime     @default(now())
+  relationship   Relationship @relation(fields: [relationshipId], references: [id])
+  author         User         @relation(fields: [authorId], references: [id])
+
+  @@index([relationshipId, category, createdAt])
+}
+
+enum MemoryType {
+  PHOTO
+  VIDEO
+}
+
+model Memory {
+  id             String       @id @default(uuid())
+  relationshipId String
+  authorId       String
+  type           MemoryType
+  url            String
+  mimeType       String?
+  favorite       Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  relationship   Relationship @relation(fields: [relationshipId], references: [id])
+  author         User         @relation(fields: [authorId], references: [id])
+
+  @@index([relationshipId, favorite, createdAt])
+}
