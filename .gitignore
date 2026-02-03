@@ -1,3 +1,7 @@
 mobile/.expo/
 **/node_modules/
 **/.env
+mobile/*.apk
+*.dmg
+mobile/*.jks
+.DS_Store
