@@ -14,4 +14,10 @@ export class AuthController {
   async googleMobile(@Body() body: { idToken: string }): Promise<LoginResponseDto> {
     return this.authService.googleMobile(body.idToken);
   }
+
+  @Post('dev/login')
+  @ApiOkResponse({ type: LoginResponseDto })
+  async devLogin(@Body() body: { email: string }): Promise<LoginResponseDto> {
+    return this.authService.devLogin(body.email);
+  }
 }

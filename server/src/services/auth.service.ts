@@ -50,4 +50,11 @@ export class AuthService {
       throw new UnauthorizedException('invalid_token');
     }
   }
+
+  async devLogin(email: string): Promise<LoginResponseDto> {
+    if (process.env.NODE_ENV === 'production') {
+      throw new UnauthorizedException('dev_login_disabled_in_production');
+    }
+    return this.oauthGoogle(email, 'Dev User');
+  }
 }
