@@ -10,3 +10,8 @@ mobile/*.apk
 *.dmg
 mobile/*.jks
 .DS_Store
+
+mobile/*.apk
+*.dmg
+mobile/*.jks
+.DS_Store
