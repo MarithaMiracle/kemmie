@@ -39,6 +39,23 @@ export class HomeService {
     const memoriesCount = await this.prisma.memory.count({ where: { relationshipId } });
     const todayVibeCheck = await this.vibeCheck.todaySummary(relationshipId);
 
-    return { currentUserName: me, bestieName: partner, streak, messagesCount, memoriesCount, todayVibeCheck, relationshipAgeDays, lastActiveSeconds };
+    // Hardcoded Birthday for Kemmie: December 21
+    const bday = new Date(today.getFullYear(), 11, 21); // Month is 0-indexed (11 = December)
+    if (bday < today) bday.setFullYear(today.getFullYear() + 1);
+    const diffTime = bday.getTime() - today.getTime();
+    const daysToGo = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const nextBirthday = { name: 'Kemmie', daysToGo };
+
+    return { 
+      currentUserName: me, 
+      bestieName: partner, 
+      streak, 
+      messagesCount, 
+      memoriesCount, 
+      todayVibeCheck, 
+      relationshipAgeDays, 
+      lastActiveSeconds,
+      nextBirthday
+    };
   }
 }

@@ -3,10 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './modules/prisma.module';
 import { AuthModule } from './modules/auth.module';
-import { LettersModule } from './modules/letters.module';
-import { BirthdayModule } from './modules/birthday.module';
 import { VibeCheckModule } from './modules/vibe-check.module';
-import { ComfortModule } from './modules/comfort.module';
 import { ChatModule } from './modules/chat.module';
 import { IdentityModule } from './modules/identity.module';
 import { HomeModule } from './modules/home.module';
@@ -21,11 +18,8 @@ import { MemoriesModule } from './modules/memories.module';
     PrismaModule,
     JwtModule.register({ secret: process.env.JWT_SECRET || 'changeme', signOptions: { expiresIn: '7d' } }),
     AuthModule,
-    LettersModule,
-    BirthdayModule,
     VibeCheckModule,
     VibesModule,
-    ComfortModule,
     IdentityModule,
     HomeModule,
     ChatModule,

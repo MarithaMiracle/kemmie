@@ -44,6 +44,7 @@ export async function fetchHomeSummary(token: string) {
     todayVibeCheck: any[];
     relationshipAgeDays: number;
     lastActiveSeconds: number;
+    nextBirthday: { name: string; daysToGo: number } | null;
   };};
 
 export async function fetchStreakSummary(token: string) {

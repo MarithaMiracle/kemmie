@@ -30,7 +30,7 @@ export function HomeScreen({ darkMode, selectedTheme, onOpenSettings, onOpenVibe
     { author: bestieName, mood: 'Chill', text: 'Late start, but feeling cozy ☕', time: 'Morning' }
   ]);
 
-  const [home, setHome] = useState<{ streak: number; messagesCount: number; memoriesCount: number; relationshipAgeDays: number } | null>(null);
+  const [home, setHome] = useState<{ streak: number; messagesCount: number; memoriesCount: number; relationshipAgeDays: number; nextBirthday: { name: string; daysToGo: number } | null } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -41,7 +41,13 @@ export function HomeScreen({ darkMode, selectedTheme, onOpenSettings, onOpenVibe
           fetchHomeSummary(token),
           fetchVibeCheckSummary(token)
         ]);
-        setHome({ streak: summary.streak, messagesCount: summary.messagesCount, memoriesCount: summary.memoriesCount, relationshipAgeDays: summary.relationshipAgeDays });
+        setHome({ 
+          streak: summary.streak, 
+          messagesCount: summary.messagesCount, 
+          memoriesCount: summary.memoriesCount, 
+          relationshipAgeDays: summary.relationshipAgeDays,
+          nextBirthday: summary.nextBirthday
+        });
         if (Array.isArray(items) && items.length) setTodayCheckins(items);
       } catch {}
     })();
@@ -119,14 +125,17 @@ export function HomeScreen({ darkMode, selectedTheme, onOpenSettings, onOpenVibe
             ))}
           </View>
         </LinearGradient>
-        <View style={{ borderRadius: 16, padding: 16, borderWidth: 2, borderColor: darkMode ? 'rgba(234,179,8,0.5)' : '#FDE68A', backgroundColor: darkMode ? '#1F2937' : '#FEF3C7', flexDirection: 'row', gap: 12 }}>
-          <Gift size={32} color={'#EC4899'} />
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 15, fontWeight: '600', color: darkMode ? '#fff' : '#111827' }}>Kemmie's Birthday</Text>
-            <Text style={{ fontSize: 20, fontWeight: '700', color: '#DB2777', marginTop: 4 }}>47 days to go! 🎉</Text>
-            <Text style={{ fontSize: 13, color: darkMode ? '#9CA3AF' : '#4B5563', marginTop: 4 }}>Time to plan something epic!</Text>
+        
+        {home?.nextBirthday ? (
+          <View style={{ borderRadius: 16, padding: 16, borderWidth: 2, borderColor: darkMode ? 'rgba(234,179,8,0.5)' : '#FDE68A', backgroundColor: darkMode ? '#1F2937' : '#FEF3C7', flexDirection: 'row', gap: 12 }}>
+            <Gift size={32} color={'#EC4899'} />
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 15, fontWeight: '600', color: darkMode ? '#fff' : '#111827' }}>{home.nextBirthday.name}'s Birthday</Text>
+              <Text style={{ fontSize: 20, fontWeight: '700', color: '#DB2777', marginTop: 4 }}>{home.nextBirthday.daysToGo === 0 ? 'Today! 🎂' : `${home.nextBirthday.daysToGo} days to go! 🎉`}</Text>
+              <Text style={{ fontSize: 13, color: darkMode ? '#9CA3AF' : '#4B5563', marginTop: 4 }}>Time to plan something epic!</Text>
+            </View>
           </View>
-        </View>
+        ) : null}
 
       </ScrollView>
       {showShareVibe && (
