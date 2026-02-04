@@ -154,9 +154,15 @@ model Message {
   content        String
   type           MessageType
   createdAt      DateTime          @default(now())
+  editedAt       DateTime?
+  deletedAt      DateTime?
+  pinned         Boolean           @default(false)
+  replyToId      String?
   relationship   Relationship      @relation(fields: [relationshipId], references: [id])
   sender         User              @relation(fields: [senderId], references: [id])
   reactions      MessageReaction[]
+  replyTo        Message?          @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies        Message[]         @relation("MessageReplies")
 
   @@index([relationshipId, createdAt])
 }

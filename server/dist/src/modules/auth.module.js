@@ -13,7 +13,6 @@ const passport_1 = require("@nestjs/passport");
 const auth_controller_1 = require("../controllers/auth.controller");
 const auth_service_1 = require("../services/auth.service");
 const jwt_strategy_1 = require("../auth/jwt.strategy");
-const google_strategy_1 = require("../auth/google.strategy");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -24,7 +23,7 @@ exports.AuthModule = AuthModule = __decorate([
             jwt_1.JwtModule.register({ secret: process.env.JWT_SECRET || 'changeme', signOptions: { expiresIn: '7d' } })
         ],
         controllers: [auth_controller_1.AuthController],
-        providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy, google_strategy_1.GoogleStrategy]
+        providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy]
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

@@ -21,43 +21,6 @@ let AuthService = class AuthService {
         this.prisma = prisma;
         this.jwt = jwt;
     }
-    async login(email, password) {
-        const user = await this.prisma.user.findUnique({ where: { email } });
-        if (!user)
-            throw new common_1.UnauthorizedException();
-        const ok = await bcrypt.compare(password, user.passwordHash);
-        if (!ok)
-            throw new common_1.UnauthorizedException();
-        const membership = await this.prisma.relationshipMember.findFirst({ where: { userId: user.id } });
-        const token = await this.jwt.signAsync({ sub: user.id, relationshipId: (membership === null || membership === void 0 ? void 0 : membership.relationshipId) || null });
-        return { accessToken: token };
-    }
-    async register(email, password, name, birthday, inviteCode) {
-        const exists = await this.prisma.user.findUnique({ where: { email } });
-        if (exists)
-            throw new common_1.BadRequestException('email_taken');
-        const passwordHash = await bcrypt.hash(password, 10);
-        const user = await this.prisma.user.create({ data: { email, passwordHash, name, birthday: birthday ? new Date(birthday) : null } });
-        let relationshipId = null;
-        if (inviteCode) {
-            const rel = await this.prisma.relationship.findUnique({ where: { joinCode: inviteCode } });
-            if (!rel)
-                throw new common_1.BadRequestException('invalid_invite');
-            const count = await this.prisma.relationshipMember.count({ where: { relationshipId: rel.id } });
-            if (count >= 2)
-                throw new common_1.BadRequestException('relationship_full');
-            await this.prisma.relationshipMember.create({ data: { relationshipId: rel.id, userId: user.id } });
-            relationshipId = rel.id;
-        }
-        else {
-            const joinCode = (0, crypto_1.randomBytes)(5).toString('hex');
-            const rel = await this.prisma.relationship.create({ data: { joinCode } });
-            await this.prisma.relationshipMember.create({ data: { relationshipId: rel.id, userId: user.id } });
-            relationshipId = rel.id;
-        }
-        const token = await this.jwt.signAsync({ sub: user.id, relationshipId });
-        return { accessToken: token };
-    }
     async oauthGoogle(email, name) {
         if (!email)
             throw new common_1.BadRequestException('missing_email');
@@ -98,6 +61,12 @@ let AuthService = class AuthService {
         catch {
             throw new common_1.UnauthorizedException('invalid_token');
         }
+    }
+    async devLogin(email) {
+        if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEV_LOGIN !== 'true') {
+            throw new common_1.UnauthorizedException('dev_login_disabled_in_production');
+        }
+        return this.oauthGoogle(email, 'Dev User');
     }
 };
 exports.AuthService = AuthService;

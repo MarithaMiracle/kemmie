@@ -2,8 +2,8 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
 const api = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000',
-  timeout: 8000
+  baseURL: process.env.EXPO_PUBLIC_API_URL ?? 'https://kemmie.onrender.com',
+  timeout: 10000
 });
 
 export async function getToken(): Promise<string | null> {
@@ -64,17 +64,47 @@ export async function fetchMemories(token: string, params?: { type?: 'PHOTO' | '
 
 export async function fetchMessages(token: string, params?: { limit?: number; cursor?: string }) {
   const res = await api.get('/chat/messages', { headers: { Authorization: `Bearer ${token}` }, params });
-  return res.data as Array<{ id: string; text: string; sender: 'me' | 'them'; createdAt: string; reaction?: string }>;
+  return res.data as Array<{ id: string; text: string; sender: 'me' | 'them'; createdAt: string; timestamp: string; pinned?: boolean; replyToId?: string | null; editedAt?: string | undefined; replyTo?: { id: string; text: string; sender: 'me' | 'them' } }>;
 }
 
-export async function sendMessage(token: string, text: string) {
-  const res = await api.post('/chat/messages', { text }, { headers: { Authorization: `Bearer ${token}` } });
-  return res.data as { id: string; text: string; sender: 'me' | 'them'; createdAt: string };
+export async function sendMessage(token: string, text: string, replyToId?: string) {
+  const res = await api.post('/chat/messages', { content: text, type: 'TEXT', replyToId }, { headers: { Authorization: `Bearer ${token}` } });
+  return res.data as { id: string; text: string; sender: 'me' | 'them'; createdAt: string; timestamp: string; pinned?: boolean; replyToId?: string | null; replyTo?: { id: string; text: string; sender: 'me' | 'them' } };
+}
+
+export async function sendSticker(token: string, sticker: string, replyToId?: string) {
+  const res = await api.post('/chat/messages', { content: sticker, type: 'STICKER', replyToId }, { headers: { Authorization: `Bearer ${token}` } });
+  return res.data as { id: string; text: string; sender: 'me' | 'them'; createdAt: string; timestamp: string; pinned?: boolean; replyToId?: string | null; replyTo?: { id: string; text: string; sender: 'me' | 'them' } };
 }
 
 export async function updateMessageReaction(token: string, id: string, reaction: string) {
-  const res = await api.patch(`/chat/messages/${id}/reaction`, { reaction }, { headers: { Authorization: `Bearer ${token}` } });
-  return res.data as { id: string; reaction: string };
+  const res = await api.post('/chat/reactions', { messageId: id, value: reaction }, { headers: { Authorization: `Bearer ${token}` } });
+  return res.data as { id: string; messageId: string; userId: string; value: string };
+}
+
+export async function editMessage(token: string, id: string, content: string) {
+  const res = await api.patch(`/chat/messages/${id}`, { content }, { headers: { Authorization: `Bearer ${token}` } });
+  return res.data as { id: string; text: string; editedAt?: string };
+}
+
+export async function deleteMessage(token: string, id: string) {
+  const res = await api.delete(`/chat/messages/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+  return res.data as { id: string };
+}
+
+export async function pinMessage(token: string, id: string, pinned: boolean) {
+  const res = await api.patch(`/chat/messages/${id}/pin`, { pinned }, { headers: { Authorization: `Bearer ${token}` } });
+  return res.data as { id: string; pinned: boolean };
+}
+
+export async function restoreMessage(token: string, id: string) {
+  const res = await api.patch(`/chat/messages/${id}/restore`, {}, { headers: { Authorization: `Bearer ${token}` } });
+  return res.data as { id: string };
+}
+
+export async function unpinAllMessages(token: string) {
+  const res = await api.patch('/chat/messages/unpin-all', {}, { headers: { Authorization: `Bearer ${token}` } });
+  return res.data as { count: number };
 }
 
 export async function addMemory(token: string, type: 'PHOTO' | 'VIDEO', url: string, mimeType?: string) {

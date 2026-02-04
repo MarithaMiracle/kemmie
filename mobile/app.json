@@ -19,7 +19,14 @@
         "scheme": "kemmie",
         "plugins": ["expo-dev-client", ["expo-splash-screen", { "backgroundColor": "#FFFFFF" }]],
         "android": {
-            "package": "com.maritha.kemmie"
+            "package": "com.maritha.kemmie",
+            "permissions": ["RECORD_AUDIO", "CAMERA"]
+        },
+        "ios": {
+            "infoPlist": {
+                "NSMicrophoneUsageDescription": "This app records voice notes in chat.",
+                "NSCameraUsageDescription": "This app uses the camera for 1:1 video calls and media sharing."
+            }
         },
         "extra": {
             "eas": {

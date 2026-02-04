@@ -16,8 +16,8 @@ let ChatService = class ChatService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async send(relationshipId, senderId, content, type) {
-        return this.prisma.message.create({ data: { relationshipId, senderId, content, type } });
+    async send(relationshipId, senderId, content, type, replyToId) {
+        return this.prisma.message.create({ data: { relationshipId, senderId, content, type, replyToId } });
     }
     async react(messageId, userId, value) {
         return this.prisma.messageReaction.upsert({
@@ -26,9 +26,29 @@ let ChatService = class ChatService {
             create: { messageId, userId, value }
         });
     }
+    async edit(messageId, userId, content) {
+        return this.prisma.message.update({ where: { id: messageId }, data: { content, editedAt: new Date() } });
+    }
+    async delete(messageId, userId) {
+        return this.prisma.message.update({ where: { id: messageId }, data: { deletedAt: new Date() } });
+    }
+    async pin(messageId, userId, pinned) {
+        return this.prisma.message.update({
+            where: { id: messageId },
+            data: { pinned },
+            select: { id: true, pinned: true }
+        });
+    }
+    async restore(messageId, userId) {
+        return this.prisma.message.update({ where: { id: messageId }, data: { deletedAt: null } });
+    }
+    async unpinAll(relationshipId) {
+        return this.prisma.message.updateMany({ where: { relationshipId }, data: { pinned: false } });
+    }
     async list(relationshipId, take = 50, cursor) {
         return this.prisma.message.findMany({
-            where: { relationshipId },
+            where: { relationshipId, deletedAt: null },
+            include: { replyTo: { select: { id: true, content: true, senderId: true } } },
             orderBy: { createdAt: 'desc' },
             take,
             ...(cursor ? { skip: 1, cursor: { id: cursor } } : {})

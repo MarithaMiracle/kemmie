@@ -12,10 +12,7 @@ const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
 const prisma_module_1 = require("./modules/prisma.module");
 const auth_module_1 = require("./modules/auth.module");
-const letters_module_1 = require("./modules/letters.module");
-const birthday_module_1 = require("./modules/birthday.module");
 const vibe_check_module_1 = require("./modules/vibe-check.module");
-const comfort_module_1 = require("./modules/comfort.module");
 const chat_module_1 = require("./modules/chat.module");
 const identity_module_1 = require("./modules/identity.module");
 const home_module_1 = require("./modules/home.module");
@@ -33,11 +30,8 @@ exports.AppModule = AppModule = __decorate([
             prisma_module_1.PrismaModule,
             jwt_1.JwtModule.register({ secret: process.env.JWT_SECRET || 'changeme', signOptions: { expiresIn: '7d' } }),
             auth_module_1.AuthModule,
-            letters_module_1.LettersModule,
-            birthday_module_1.BirthdayModule,
             vibe_check_module_1.VibeCheckModule,
             vibes_module_1.VibesModule,
-            comfort_module_1.ComfortModule,
             identity_module_1.IdentityModule,
             home_module_1.HomeModule,
             chat_module_1.ChatModule,

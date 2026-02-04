@@ -52,7 +52,23 @@ let HomeService = class HomeService {
         const messagesCount = await this.prisma.message.count({ where: { relationshipId } });
         const memoriesCount = await this.prisma.memory.count({ where: { relationshipId } });
         const todayVibeCheck = await this.vibeCheck.todaySummary(relationshipId);
-        return { currentUserName: me, bestieName: partner, streak, messagesCount, memoriesCount, todayVibeCheck, relationshipAgeDays, lastActiveSeconds };
+        const bday = new Date(today.getFullYear(), 11, 21);
+        if (bday < today)
+            bday.setFullYear(today.getFullYear() + 1);
+        const diffTime = bday.getTime() - today.getTime();
+        const daysToGo = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const nextBirthday = { name: 'Kemmie', daysToGo };
+        return {
+            currentUserName: me,
+            bestieName: partner,
+            streak,
+            messagesCount,
+            memoriesCount,
+            todayVibeCheck,
+            relationshipAgeDays,
+            lastActiveSeconds,
+            nextBirthday
+        };
     }
 };
 exports.HomeService = HomeService;

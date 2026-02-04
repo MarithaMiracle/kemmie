@@ -40,7 +40,7 @@ let ChatGateway = class ChatGateway {
     async send(client, data) {
         if (!client.data.relationshipId || !client.data.userId)
             return;
-        const msg = await this.chat.send(client.data.relationshipId, client.data.userId, data.content, data.type);
+        const msg = await this.chat.send(client.data.relationshipId, client.data.userId, data.content, data.type, data.replyToId);
         this.server.to(`rel:${client.data.relationshipId}`).emit('message:new', msg);
     }
     async react(client, data) {
@@ -48,6 +48,26 @@ let ChatGateway = class ChatGateway {
             return;
         const r = await this.chat.react(data.messageId, client.data.userId, data.value);
         this.server.to(`rel:${client.data.relationshipId}`).emit('message:reaction', r);
+    }
+    async callOffer(client, data) {
+        if (!client.data.relationshipId || !client.data.userId)
+            return;
+        client.broadcast.to(`rel:${client.data.relationshipId}`).emit('call:offer', { from: client.data.userId, sdp: data.sdp });
+    }
+    async callAnswer(client, data) {
+        if (!client.data.relationshipId || !client.data.userId)
+            return;
+        client.broadcast.to(`rel:${client.data.relationshipId}`).emit('call:answer', { from: client.data.userId, sdp: data.sdp });
+    }
+    async callIce(client, data) {
+        if (!client.data.relationshipId || !client.data.userId)
+            return;
+        client.broadcast.to(`rel:${client.data.relationshipId}`).emit('call:ice', { from: client.data.userId, candidate: data.candidate });
+    }
+    async callEnd(client) {
+        if (!client.data.relationshipId || !client.data.userId)
+            return;
+        client.broadcast.to(`rel:${client.data.relationshipId}`).emit('call:end', { from: client.data.userId });
     }
 };
 exports.ChatGateway = ChatGateway;
@@ -71,6 +91,37 @@ __decorate([
     __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
     __metadata("design:returntype", Promise)
 ], ChatGateway.prototype, "react", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('call:offer'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __param(1, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
+    __metadata("design:returntype", Promise)
+], ChatGateway.prototype, "callOffer", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('call:answer'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __param(1, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
+    __metadata("design:returntype", Promise)
+], ChatGateway.prototype, "callAnswer", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('call:ice'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __param(1, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
+    __metadata("design:returntype", Promise)
+], ChatGateway.prototype, "callIce", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('call:end'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket]),
+    __metadata("design:returntype", Promise)
+], ChatGateway.prototype, "callEnd", null);
 exports.ChatGateway = ChatGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({ cors: true }),
     __metadata("design:paramtypes", [chat_service_1.ChatService, jwt_1.JwtService])

@@ -8,6 +8,10 @@ export interface MessageEntity {
   content: string;
   type: MessageType;
   createdAt: Date;
+  editedAt?: Date | null;
+  deletedAt?: Date | null;
+  pinned?: boolean;
+  replyToId?: string | null;
 }
 
 export interface MessageReactionEntity {
